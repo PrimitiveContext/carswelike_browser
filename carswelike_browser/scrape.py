@@ -1,11 +1,5 @@
 #!/usr/bin/env python3
 
-import time
-from urllib.parse import urlparse
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-
 MAX_RETRIES = 5
 WAIT_BETWEEN_EXPANDS = 2
 POSSIBLE_EXPAND_TEXTS = [
@@ -19,23 +13,34 @@ SCROLL_STEP = 500
 SCROLL_PAUSE = 1
 
 def scrape(driver, url, scroll_mode=None):
+    """
+    Navigates 'driver' to 'url'.
+    Expands <details> and possible 'Show more' links.
+    If scroll_mode == "scroll", does a slow scroll down the page.
+    Saves a screenshot <domain>.png and final HTML <domain>.html.
+    Returns: (screenshot_path, html_path).
+    """
 
-    #Navigates 'driver' to 'url'.
-    #Expands <details> and 'Show more' links.
-    #If scroll_mode == "scroll", does slow scrolling.
-    #Saves screenshot <domain>.png and final HTML <domain>.html.
-    #Returns (screenshot_path, html_path).
+    # Lazy-import everything used inside this function, to avoid any potential
+    # top-level import issues (especially if you expand this script later).
+    import time
+    from urllib.parse import urlparse
+    from selenium.webdriver.common.by import By
+    from selenium.webdriver.support.ui import WebDriverWait
+    from selenium.webdriver.support import expected_conditions as EC
 
     def expand_all_elements(d):
         for _ in range(MAX_RETRIES):
             expansions_this_round = 0
 
+            # Expand all <details> that aren't already open
             details_elems = d.find_elements(By.TAG_NAME, "details")
             for dd in details_elems:
                 if not dd.get_attribute("open"):
                     d.execute_script("arguments[0].setAttribute('open','')", dd)
                     expansions_this_round += 1
 
+            # Click all 'Show more'-type links
             for txt in POSSIBLE_EXPAND_TEXTS:
                 elems = d.find_elements(
                     By.XPATH,
@@ -62,6 +67,7 @@ def scrape(driver, url, scroll_mode=None):
                 time.sleep(pause)
                 current_position += step
 
+            # Ensure we're at the very bottom
             d.execute_script("window.scrollTo(0, document.body.scrollHeight);")
             time.sleep(pause)
         except Exception as e:
@@ -74,6 +80,7 @@ def scrape(driver, url, scroll_mode=None):
 
     print(f"[scrape] Navigating to {url} ...")
     driver.get(url)
+
     try:
         WebDriverWait(driver, 15).until(
             EC.presence_of_element_located((By.TAG_NAME, "body"))
@@ -81,11 +88,13 @@ def scrape(driver, url, scroll_mode=None):
     except Exception:
         print("[scrape] Warning: page might not have fully loaded by 15s.")
 
+    # Expand <details> and "Show more" links
     expand_all_elements(driver)
 
     if scroll_mode == "scroll":
         slow_scroll_to_bottom(driver)
 
+    # Pause briefly before final screenshot
     time.sleep(2)
 
     driver.save_screenshot(screenshot_file)
