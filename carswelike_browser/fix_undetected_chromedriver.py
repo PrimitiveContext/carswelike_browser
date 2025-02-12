@@ -13,7 +13,7 @@ def fix_undetected_chromedriver():
     if _already_fixed:
         return
 
-    ucd_dir = os.path.dirname(uc.__file__)
+    uc_dir = os.path.dirname(uc.__file__)
     patcher_file = os.path.join(uc_dir, "patcher.py")
 
     if not os.path.isfile(patcher_file):
