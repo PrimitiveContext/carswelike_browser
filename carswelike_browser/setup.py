@@ -2,7 +2,6 @@
 
 import os
 import time
-import undetected_chromedriver as uc
 
 def setup(resolution="2160x3840", headless=False, download_dir=None):
     """
@@ -17,10 +16,23 @@ def setup(resolution="2160x3840", headless=False, download_dir=None):
     Returns:
         WebDriver: A Selenium-compatible undetected_chromedriver instance.
     """
+    # 1. PATCH undetected_chromedriver first (to remove 'distutils' references).
+    #    Make sure fix_undetected_chromedriver.py doesn't do a top-level import
+    #    of undetected_chromedriver itself.
+    try:
+        from .fix_undetected_chromedriver import fix_undetected_chromedriver
+        fix_undetected_chromedriver()
+    except ImportError:
+        # If you can't import or don't have a patch script, just pass or install distutils
+        print("[setup] WARNING: Could not import fix_undetected_chromedriver.")
+
+    # 2. Now import undetected_chromedriver safely (after patch is applied).
+    import undetected_chromedriver as uc
+
     if download_dir is None:
         download_dir = os.getcwd()  # default to present working directory
 
-    # Parse resolution argument
+    # Parse resolution
     if "x" in resolution.lower():
         try:
             width, height = resolution.lower().split("x")
