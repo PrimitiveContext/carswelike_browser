@@ -4,14 +4,21 @@ import os
 import time
 import undetected_chromedriver as uc
 
-def setup(resolution="2160x3840", headless=False):
+def setup(resolution="2160x3840", headless=False, download_dir=None):
     """
     Creates & returns a Chrome (undetected_chromedriver) WebDriver.
-      - resolution: e.g. "2160x3840", default 4K vertical
-      - headless: bool; default False => non-headless
+    
+    Args:
+        resolution (str): e.g. "2160x3840". Default is 4K vertical.
+        headless (bool): Whether to run Chrome headless. Default = False.
+        download_dir (str, optional): Folder path where downloaded files go.
+                                      Defaults to the current working directory.
 
-    Downloads are set to the current working directory.
+    Returns:
+        WebDriver: A Selenium-compatible undetected_chromedriver instance.
     """
+    if download_dir is None:
+        download_dir = os.getcwd()  # default to present working directory
 
     # Parse resolution argument
     if "x" in resolution.lower():
@@ -21,10 +28,12 @@ def setup(resolution="2160x3840", headless=False):
             height = height.strip()
             _win_size = f"--window-size={width},{height}"
         except Exception:
-            print(f"[setup] Warning: cannot parse resolution '{resolution}', using 2160x3840 fallback.")
+            print(f"[setup] Warning: cannot parse resolution '{resolution}', "
+                  "using 2160x3840 fallback.")
             _win_size = "--window-size=2160,3840"
     else:
-        print(f"[setup] Unexpected resolution format '{resolution}', using 2160x3840 fallback.")
+        print(f"[setup] Unexpected resolution format '{resolution}', "
+              "using 2160x3840 fallback.")
         _win_size = "--window-size=2160,3840"
 
     options = uc.ChromeOptions()
@@ -40,14 +49,14 @@ def setup(resolution="2160x3840", headless=False):
     options.add_argument("--disable-software-rasterizer")
     options.add_argument("--disable-extensions")
 
-    # Define Chrome preferences to download files silently to PWD
     prefs = {
         "credentials_enable_service": False,
         "profile.password_manager_enabled": False,
         "profile.default_content_setting_values.notifications": 2,
-        "download.default_directory": os.getcwd(),
+        "download.default_directory": download_dir,
         "download.prompt_for_download": False,
-        "download.directory_upgrade": True
+        "download.directory_upgrade": True,
+        "profile.default_content_setting_values.automatic_downloads": 1
     }
     options.add_experimental_option("prefs", prefs)
 
