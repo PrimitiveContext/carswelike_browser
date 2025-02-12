@@ -1,0 +1,37 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "carswelike_browser"           # match your import
+version = "0.1.0"
+description = "A Python library for scraping pages with 4K Chrome, auto-patching undetected_chromedriver for Python 3.12."
+readme = "README.md"
+license = { file = "LICENSE" }
+authors = [
+  { name = "Your Name", email = "you@example.com" }
+]
+keywords = [
+  "scraping",
+  "selenium",
+  "undetected-chromedriver"
+]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
+]
+requires-python = ">=3.7"
+dependencies = [
+  "undetected-chromedriver",
+  "packaging",
+  "selenium"
+]
+
+[project.urls]
+"Homepage" = "https://github.com/YOUR_USERNAME/carswelike_browser"
+"Tracker" = "https://github.com/YOUR_USERNAME/carswelike_browser/issues"
+
+[tool.setuptools.packages.find]
+where = ["."]
+exclude = ["tests", "docs"]
